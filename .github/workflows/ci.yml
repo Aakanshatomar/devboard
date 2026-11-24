@@ -1,6 +1,6 @@
 name: CI
 
-on: 
+on:
   push:
     branches: [master]
 
@@ -8,11 +8,11 @@ jobs:
   code:
     runs-on: ubuntu-latest
     steps:
-      - name: checkout code
+      - name: Checkout code
         uses: actions/checkout@v7
+
       - name: Docker setup [Login]
-      uses: docker/login-action@v4
-      with:
-       username: ${{ vars.DOCKER_USERNAME }}
-       password: ${{ secrets.DOCKER_PASSWORD }}
-  
+        uses: docker/login-action@v4
+        with:
+          username: ${{ vars.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}

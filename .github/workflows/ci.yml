@@ -47,8 +47,8 @@ jobs:
             tags: ${{ vars.DOCKER_USERNAME }}/devboard-frontend:latest
    
    backend:
-     runs-on: ubuntu-latest
-     steps:
+      runs-on: ubuntu-latest
+      steps:
         - name: Checkout code
           uses: actions/checkout@v4
 

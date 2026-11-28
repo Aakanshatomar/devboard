@@ -1,4 +1,4 @@
-  # Goal: link, build, test, and push the code to Docker Hubname: CI
+# Goal: link, build, test, and push the code to Docker Hubname: CI
 name: CI
 
 on:

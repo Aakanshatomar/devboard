@@ -69,7 +69,7 @@ jobs:
         working-directory: backend
 
       - name: Check Formatting
-        run: test -z "$(gofmt -l .)"
+        run: got fmt ./...
         working-directory: backend
 
       - name: Run Tests

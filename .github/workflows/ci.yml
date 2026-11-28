@@ -1,26 +1,32 @@
+  # Goal: link, build, test, and push the code to Docker Hub
+
 name: CI
 
 on:
   push:
-    branches: [master]
+    branches:
+      - main
 
 jobs:
-  code:
+  frontend:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
 
-      - name: Docker setup [Login]
-        uses: docker/login-action@v4
+      - name: Copy example env to main env
+        run: cp .env.example .env
+
+      - name: Docker login
+        uses: docker/login-action@v2
         with:
-          username: ${{ vars.DOCKER_USERNAME }}
+          username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and Push
-        uses: docker/build-push-action@v7
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
         with:
-          context: ./frontend
-          file: ./frontend/Dockerfile
+          context: .
           push: true
-          tags: ${{ vars.DOCKER_USERNAME }}/devboaed-fe-master:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/devboard:${{ github.sha }}
+      

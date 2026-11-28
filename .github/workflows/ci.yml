@@ -1,79 +1,83 @@
+
 name: CI
 
 on:
-   push:
+  push:
     branches:
       - master
 
-
 jobs:
-    frontend:
-      runs-on: ubuntu-latest
-      steps:
-        - name: Checkout code
-          uses: actions/checkout@v4
+  frontend:
+    runs-on: ubuntu-latest
 
-        - name: Set up Node.js
-          uses: actions/setup-node@v3
-          with:
-            node-version: 20
-            cache: npm
-            cache-dependency-path: frontend/package-lock.json
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-        - name: Install dependencies
-          run: npm install --legacy-peer-deps
-          working-directory: frontend
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
 
-        - name: Run Lint
-          run: npm run lint
-          working-directory: frontend
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+        working-directory: frontend
 
-        - name: Run Tests
-          run: npm run test
-          working-directory: frontend
+      - name: Run Lint
+        run: npm run lint
+        working-directory: frontend
 
-        - name: Docker-login
-          uses: docker/login-action@v2
-          with:
-            username: ${{ vars.DOCKER_USERNAME }}
-            password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Run Tests
+        run: npm run test
+        working-directory: frontend
 
-        - name: Build Docker image and push
-          uses: docker/build-push-action@v7
-          with:
-            context: frontend
-            push: true
-            tags: ${{ vars.DOCKER_USERNAME }}/devboard-frontend:latest
-   
-   backend:
-      runs-on: ubuntu-latest
-      steps:
-        - name: Checkout code
-          uses: actions/checkout@v4
+      - name: Docker Login
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-        - name: Set up Go
-          uses: actions/setup-go@v4
-          with:
-            go-version: 1.21
-            check-latest: false
-            cache-dependency-path: backend/go.sum
+      - name: Build Docker image and push
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          push: true
+          tags: ${{ vars.DOCKER_USERNAME }}/devboard-frontend:latest
 
-        - name: Install dependencies
-          run: go mod download
+  backend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+          cache: true
+          cache-dependency-path: backend/go.sum
+
+      - name: Install dependencies
+        run: go mod download
+        working-directory: backend
+
+      - name: Run Vet
+        run: go vet ./...
+        working-directory: backend
+
+      - name: Check Formatting
+        run: test -z "$(gofmt -l .)"
+        working-directory: backend
+
+      - name: Run Tests
+        run: go test ./...
+        working-directory: backend
+
+      - name: Run Lint
+        uses: golangci/golangci-lint-action@v6
+        with:
           working-directory: backend
-
-        - name: Runt vet
-          run: go vet ./...
-          working-directory: backend
-
-        - name: Run fmt
-          run: go fmt ./...
-          working-directory: backend
-
-        - name: Run Tests
-          run: go test ./...
-          working-directory: backend
-
-        - name: Run Lint
-          run: golangci-lint run
-          working-directory: backend
+          version: latest
